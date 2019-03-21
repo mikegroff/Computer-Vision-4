@@ -1,0 +1,1 @@
+To run the extra credit run the scm_classify function with the extra parameter = True, for the experimental design all thats neccseary is the call the function with extra=True and the number of iterations that are being tested 

@@ -1,0 +1,204 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 960px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+td img {
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1><span style="color: #DE3737">Michael Groff</span></h1>
+</div>
+</div>
+<div class="container">
+
+<h2>Project 4: Scene Recognition with bag of words </h2>
+
+<h3>Tiny Images & Nearest Neighbor</h3>
+
+
+
+<div style="clear:both">
+
+
+<p>
+	The first step in creating a bag of words scene recognizer was to build a “tiny image” feature which is a simple image representation which involves simply resizing the image to a smaller square, reshaping it to a vector form, normalizing it and returning the normalized vector as a feature. Different square dimensions could be used but for simplicity I used a 16x16 square dimension. In order to classify images a nearest neighbor classifier was used that simply took all the training images features and compared the Euclidean distance to each of the test images, awarding the label of the training image whose feature was closest to the test image. Again I used a simple implementation as this was only to establish a baseline. Using the Tiny Image feature with this classifer only had an accuracy of 17.53%
+</p>
+
+<div style="float: right; padding: 20px">
+<img src="t1.jpg" width="50%"/>
+<p style="font-size: 14px">Tiny Image with NNR</p>
+</div>
+
+<div style="clear:both">
+
+<h3>Vocabulary and Bag of Words model</h3>
+
+<p>Next was the implementation of the bag of words feature which began with the building of a vocabulary, to do so first we loaded a grayscale version of the image (for simplicity) then we used a sift algorithm to return sift features found from the image, this was repeated for all the training images and them using a kmeans function the centers of the sift features were found and organized into a vocabulary of 500 words. I chose 500 because when evaluating the classifiers 500 words gave a good middle ground with enough words to gain higher accuracy but not to slow down the overall script by too much, when calling dsift I found that a step size of 100 with a bin size of 50 was small enough to build an extensive enough list again with fairly high accuracy. Once the vocabulary was built each of the test images needed to be classified using this vocabulary so once again using dsift to pull feature vectors from the image we then used kmeans_quantize to return the location of each word that the feature vectors were being assigned to, from this data we built a histogram that scored the entire image based on the number of visual words that it was associated with through its feature vectors. This time dsift was run with a step size of 5 and bin size of 5 as we needed more vectors to quantify each image. Then each histogram was normalized so that when compared to other histograms its score would be similar to an image who had the same ratios of each visual word to another and not simple be mismatched because its total score differed among individual words. Using this feature model with the nearest neighbor classifier had an accuracy of 52.60%
+</p>
+
+
+<div style="float: right; padding: 20px">
+<img src="t2.jpg" width="50%"/>
+<p style="font-size: 14px">SIFT bag of words with NNR</p>
+</div>
+
+
+
+<div style="clear:both">
+<h3>SVM </h3>
+
+<p>
+	Finally a linear learner was used to classify the features obtained through our bag of words model, this was implemented using sklearn linearSVC with a max iteration of 10000 and 15 iterations to create a model for each possibly classification that would determine simply if an image was that label or not. Once these models were each trained on the training image feature data each of the bag of words features for the test images was analyzed with each models coefficients and whichever yielded the highest value was chosen as the label used. When classifying each svm a binary function was used to turn the list of labels into a 1 if it was the label of the svm and a -1 otherwise. This classifier along with the bag of words scored 72.93% after some tuning of the parameters namely the C parameter which perfromed conissentely well with a value of 15.
+</p>
+
+<div style="float: right; padding: 20px">
+<img src="t3.jpg" width="50%"/>
+<p style="font-size: 14px">Sift bag of words with SVM</p>
+</div>
+
+<div style="clear:both">
+<h3>Improvements </h3>
+
+<p>
+In order to improve upon the classifier an RBF SVC was also implemented using the 15 iterations again only this time the classifier that had the highest probability of modeling the image as its label was chosen, tweaking the parameters a little namely raising the C parameter to 150 and using a gamma=’scale’ allowed a slight improvement of between 1% and 3% based on some of the other parameters used. As a ten minute runtime limit was imposed on the overall project the dsift features were run on fast each time except for the last in order to try and achieve the highest possible accuracy, the step size was also brought down to 3, With these improvements the score ros to 75.20% 
+</p>
+
+<div style="float: right; padding: 20px">
+<img src="t4.jpg" width="50%"/>
+<p style="font-size: 14px">Improved Sift bag of words with SVM</p>
+</div>
+
+</code></pre>
+
+
+
+
+<div style="clear:both" >
+<p> 	</p>
+</div>
+</body>
+</html>
